@@ -1,4 +1,9 @@
+function DummyFunction()
+	
+end
+
 function HandleMoneyCommand(Split, IN_player)
+    HANDY = cRoot:Get():GetPluginManager():GetPlugin("Handy")
 	local _action_was_performed = false
 	local _playername = IN_player:GetName()
 	if (IN_player:HasPermission("coiny.base") == true) then
@@ -114,7 +119,7 @@ function HandleMoneyCommand(Split, IN_player)
 end
 --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 function SaveData()
-	file = io.open(PLUGIN:GetLocalDirectory().."/coiny_players.dat", "w")
+	file = io.open(PLUGIN:GetLocalFolder().. "/coiny_players.dat", "w")
 	for k,v in pairs(PlayersData) do
 		local line = ""..k
 		line = line.."~"..v.was_given_starter
@@ -128,7 +133,7 @@ function SaveData()
 	LOG(PLUGIN:GetName().." v"..PLUGIN:GetVersion()..": Players data was saved")
 end
 function LoadData()
-	file = io.open(PLUGIN:GetLocalDirectory().."/coiny_players.dat", "r")
+	file = io.open(PLUGIN:GetLocalFolder().."/coiny_players.dat", "r")
 	if (file == nil) then		return 1	end
 	for line in file:lines() do
 		local Split = LineSplit(line, "~")
@@ -147,8 +152,8 @@ function LoadData()
 	file:close()
 end
 function SaveSettings()
-	_ini_file = cIniFile(PLUGIN:GetLocalDirectory() .. "/coiny_settings.ini")
-	_ini_file:ReadFile()
+	_ini_file = cIniFile()
+	_ini_file:ReadFile(PLUGIN:GetLocalFolder() .. "/coiny_settings.ini")
 	local _save_mode = _ini_file:GetValueSet("Settings", "SaveMode", "Timed")
 	if (SaveMode == eSaveMode_Timed)	then	_save_mode = "Timed"		end
 	if (SaveMode == eSaveMode_Paranoid)	then	_save_mode = "Paranoid"		end
@@ -160,11 +165,11 @@ function SaveSettings()
 	_ini_file:SetValueB("Settings", "AllowNegativeBalance", 	AllowNegativeBalance, 	false)
 	_ini_file:SetValueB("Settings", "AllowPartialTransfer", 	AllowPartialTransfer, 	false)
 	_ini_file:SetValueB("Settings", "LogHackAttempts", 			LogHackAttempts, 		false)
-	_ini_file:WriteFile()
+	_ini_file:WriteFile(PLUGIN:GetLocalFolder() .. "/coiny_settings.ini")
 end
 function LoadSettings()
-	_ini_file = cIniFile(PLUGIN:GetLocalDirectory() .. "/coiny_settings.ini")
-	_ini_file:ReadFile()
+	_ini_file = cIniFile()
+	_ini_file:ReadFile(PLUGIN:GetLocalFolder() .. "/coiny_settings.ini")
 	local _save_mode = _ini_file:GetValueSet("Settings", "SaveMode", "Timed")
 	if (_save_mode == "Timed")		then SaveMode = eSaveMode_Timed		end
 	if (_save_mode == "Paranoid")	then SaveMode = eSaveMode_Paranoid	end
@@ -175,7 +180,7 @@ function LoadSettings()
 	AllowNegativeBalance = 	_ini_file:GetValueSetB("Settings", "AllowNegativeBalance", 	false)
 	AllowPartialTransfer = 	_ini_file:GetValueSetB("Settings", "AllowPartialTransfer", 	false)
 	LogHackAttempts = 		_ini_file:GetValueSetB("Settings", "LogHackAttempts", 		false)
-	_ini_file:WriteFile()
+	_ini_file:WriteFile(PLUGIN:GetLocalFolder() .. "/coiny_settings.ini")
 end
 --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 function TransferMoney(IN_from_name, IN_to_name, IN_ammount)
