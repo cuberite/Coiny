@@ -36,25 +36,20 @@ PROCESSED_MESSAGE = ""
 WORK_WORLD = cRoot:Get():GetDefaultWorld():GetName()
 
 function Initialize(Plugin)
+	Plugin:SetName("Coiny")
+	Plugin:SetVersion(4)
 	PLUGIN = Plugin
-	PLUGIN:SetName("Coiny")
-	PLUGIN:SetVersion(3)	-- cause V-twin is much cooler than v1.
+		
+	cPluginManager.BindCommand("/money",          "coiny.base",      HandleMoneyCommand,   " - shows your coins ammount")
+	cPluginManager.BindCommand("/m",              "coiny.base",      HandleMoneyCommand,   "")
+	cPluginManager.BindCommand("/money pay",      "coiny.trade",     DummyFunction,        " (name) (ammount) - you pay to 'name' 'ammount' of your coins")
+	cPluginManager.BindCommand("/money give",     "coiny.reward",    DummyFunction,        " (name) (ammount) - gives 'name' 'ammount' of coins from air")
+	cPluginManager:BindCommand("/money take",     "coiny.punish",    DummyFunction,        " (name) (ammount) - takes from 'name' 'ammount' of coins")
+	cPluginManager:BindCommand("/money freeze",   "coiny.freeze",    DummyFunction,        " - freeze/unfreeze your coins ammount, for testing purposes")
 	
-	PluginManager = cRoot:Get():GetPluginManager()
-	PluginManager:AddHook(PLUGIN, cPluginManager.HOOK_TICK)
-	HANDY = PluginManager:GetPlugin("Handy")
+	cPluginManager.AddHook(cPluginManager.HOOK_TICK, OnTick)
 	
-	Plugin:AddCommand("/money",			" - shows your coins ammount",											"coiny.base")
-	Plugin:AddCommand("/m",				" - shortcut for /money",												"coiny.base")
-	Plugin:AddCommand("/money pay",		" (name) (ammount) - you pay to 'name' 'ammount' of your coins",		"coiny.trade")
-	Plugin:AddCommand("/money give",	" (name) (ammount) - gives 'name' 'ammount' of coins from air",			"coiny.reward")
-	Plugin:AddCommand("/money take",	" (name) (ammount) - takes from 'name' 'ammount' of coins",				"coiny.punish")
-	Plugin:AddCommand("/money freeze",	" - freeze/unfreeze your coins ammount, for testing purposes",			"coiny.freeze")
-	
-	Plugin:BindCommand("/money",	"coiny.base",		HandleMoneyCommand)
-	Plugin:BindCommand("/m",		"coiny.base",		HandleMoneyCommand)
-	
-	--Plugin:AddWebTab("Manage coins", HandleRequest_Coiny)	-- commented due to not being implemented
+	HANDY = cRoot:Get():GetPluginManager():GetPlugin("Handy")
 	
 	LoadSettings()
 	LoadData()
