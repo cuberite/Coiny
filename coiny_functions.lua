@@ -149,7 +149,7 @@ function HandleMoneyCommand( Split, IN_player )
 end
 --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 function SaveData()
-	file = io.open( PLUGIN:GetLocalFolder().. "/coiny_players.dat", "w" )
+	file = io.open( PLUGIN:GetLocalFolder().."/coiny_players.dat", "w" )
 	for k,v in pairs( PlayersData ) do
 		local line = ""..k
 		line = line.."~"..v.was_given_starter
@@ -183,7 +183,7 @@ function LoadData()
 end
 function SaveSettings()
 	_ini_file = cIniFile()
-	_ini_file:ReadFile( PLUGIN:GetLocalFolder() .. "/coiny_settings.ini" )
+	_ini_file:ReadFile( PLUGIN:GetLocalFolder().."/coiny_settings.ini" )
 	local _save_mode = _ini_file:GetValueSet( "Settings", "SaveMode", "Timed" )
 	if( SaveMode == eSaveMode_Timed )		then	_save_mode = "Timed"		end
 	if( SaveMode == eSaveMode_Paranoid )	then	_save_mode = "Paranoid"		end
@@ -217,14 +217,15 @@ function SaveSettings()
 		_ini_file:SetValue( "AMHigh", "Postfix",AdvancedMessagesData["HighPostfix"], false )
 	end
 	
+	_ini_file:DeleteKey( "Messages" )
 	for k,v in pairs( Messages ) do
 		_ini_file:SetValue( "Messages", k, v )
 	end
-	_ini_file:WriteFile(PLUGIN:GetLocalFolder() .. "/coiny_settings.ini")
+	_ini_file:WriteFile(PLUGIN:GetLocalFolder().."/coiny_settings.ini")
 end
 function LoadSettings()
 	_ini_file = cIniFile()
-	_ini_file:ReadFile( PLUGIN:GetLocalFolder() .. "/coiny_settings.ini" )
+	_ini_file:ReadFile( PLUGIN:GetLocalFolder().."/coiny_settings.ini" )
 	local _save_mode = _ini_file:GetValueSet( "Settings", "SaveMode", "Timed" )
 	if( _save_mode == "Timed" )		then SaveMode = eSaveMode_Timed		end
 	if( _save_mode == "Paranoid" )	then SaveMode = eSaveMode_Paranoid	end
@@ -262,7 +263,7 @@ function LoadSettings()
 		local valueName = _ini_file:GetValueName( "Messages", index )
 		Messages[valueName] = _ini_file:GetValue( "Messages", valueName )
 	end
-	_ini_file:WriteFile( PLUGIN:GetLocalFolder() .. "/coiny_settings.ini" )
+	_ini_file:WriteFile( PLUGIN:GetLocalFolder().."/coiny_settings.ini" )
 end
 --\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
 function TransferMoney( IN_from_name, IN_to_name, IN_ammount )
