@@ -213,7 +213,6 @@ function SaveSettings()
 		_ini_file:SetValue( "AMMedium", "Prefix", 	AdvancedMessagesData["MediumPrefix"], false )
 		_ini_file:SetValue( "AMMedium", "Postfix", 	AdvancedMessagesData["MediumPostfix"], false )
 		
-		_ini_file:SetValueI("AMHigh", "Value", 	AdvancedMessagesData["HighValue"], false )
 		_ini_file:SetValue( "AMHigh", "Prefix", AdvancedMessagesData["HighPrefix"], false )
 		_ini_file:SetValue( "AMHigh", "Postfix",AdvancedMessagesData["HighPostfix"], false )
 	end
