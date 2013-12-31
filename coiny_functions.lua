@@ -260,7 +260,6 @@ function LoadSettings()
 	
 	local values = _ini_file:GetNumValues( "Messages" )
 	for index = 0, (values - 1), 1 do
-		LOG( "Processing message #"..index..", out of "..values )
 		local valueName = _ini_file:GetValueName( "Messages", index )
 		Messages[valueName] = _ini_file:GetValue( "Messages", valueName )
 	end
