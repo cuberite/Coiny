@@ -221,7 +221,7 @@ function SaveSettings()
 	for k,v in pairs( Messages ) do
 		_ini_file:SetValue( "Messages", k, v )
 	end
-	_ini_file:WriteFile(PLUGIN:GetLocalFolder().."/coiny_settings.ini")
+	_ini_file:WriteFile( PLUGIN:GetLocalFolder().."/coiny_settings.ini" )
 end
 function LoadSettings()
 	_ini_file = cIniFile()

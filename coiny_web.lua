@@ -1,7 +1,3 @@
---[[
-WARNING!
-Web interface is not implemented yet!
-]]
 local function AddPlayerButtons( inName )
 	local playerBalance = GetMoney( inName )
 	local result = "<form method='POST'><input type='hidden' name='PlayerName' value='"..inName.."'><input type='text' name='Balance' value='"..playerBalance.."'>"
@@ -95,7 +91,7 @@ function ComposePlayersList( inFromRoot )
 	if( inFromRoot ) then
 		cRoot:Get():ForEachPlayer( AddPlayerToTable )
 	else
-		WorldFilter:ForEachPlayer( AddPlayerToTable )
+		FilterWorld:ForEachPlayer( AddPlayerToTable )
 	end
 	if( PlayerNum == 0 ) then
 		playersContent = playersContent.."<tr><td>No connected players</td></tr>"
