@@ -1,10 +1,4 @@
---[[
-TODO:
-- check for #Split == 4 and Split[4] ~= number IN /money command handler
 
-DELAYED TODO:
-- Re-write "HackCheck()" for planned "Cheetah" compatibility (Cheetah should keep its logs separately)
-]]
 
 -- LOGIC
 eSaveMode_Paranoid = -1
@@ -27,8 +21,6 @@ AdvancedMessagesData = {}
 
 FunctionsInternalCall = false
 
-HANDY = {}
-PLUGIN = {}	-- Reference to own plugin object
 PlayersData = {}	-- this would be a hashtable for players coins
 PROCESSED_PLAYER = ""
 PROCESSED_MESSAGE = ""
@@ -36,49 +28,58 @@ WORK_WORLD = cRoot:Get():GetDefaultWorld():GetName()
 
 Messages = {}
 
-function Initialize(Plugin)
-	Plugin:SetName( "Coiny" )
-	Plugin:SetVersion( 6 )
-	PLUGIN = Plugin
-	local pluginManager = cPluginManager:Get()
-	pluginManager:BindCommand( "/money",          "coiny.base",      HandleMoneyCommand,   " - shows your coins ammount" )
-	pluginManager:BindCommand( "/m",              "coiny.base",      HandleMoneyCommand,   "" )
-	pluginManager:BindCommand( "/money pay",      "coiny.trade",     DummyFunction,        " (name) (ammount) - you pay to 'name' 'ammount' of your coins" )
-	pluginManager:BindCommand( "/money give",     "coiny.reward",    DummyFunction,        " (name) (ammount) - gives 'name' 'ammount' of coins from air" )
-	pluginManager:BindCommand( "/money take",     "coiny.punish",    DummyFunction,        " (name) (ammount) - takes from 'name' 'ammount' of coins" )
-	pluginManager:BindCommand( "/money freeze",   "coiny.freeze",    DummyFunction,        " - freeze/unfreeze your coins ammount, for testing purposes" )
+
+
+
+
+function Initialize(a_Plugin)
+	-- Initialize commands:
+	dofile(cPluginManager:GetPluginsPath() .. "/InfoReg.lua")
+	RegisterPluginInfoCommands()
+	-- TODO: No console commands yet
+	-- RegisterPluginInfoConsoleCommands()
 	
-	cPluginManager.AddHook( cPluginManager.HOOK_TICK, OnTick )
-	
-	HANDY = cRoot:Get():GetPluginManager():GetPlugin( "Handy" )
+	cPluginManager.AddHook(cPluginManager.HOOK_TICK, OnTick)
 	
 	LoadSettings()
 	LoadData()
 	
-	Plugin:AddWebTab("Manage", HandleRequest_Manage)
-	LOG( "Initialized "..PLUGIN:GetName().." v"..PLUGIN:GetVersion() )
+	a_Plugin:AddWebTab("Manage", HandleRequest_Manage)
+	LOG("Initialized Coiny v.6")
 	return true
 end
 
+
+
+
+
 function OnDisable()
 	SaveSettings()
-	if( SaveMode ~= eSaveMode_Dont ) then
+	if (SaveMode ~= eSaveMode_Dont) then
 		SaveData()
 	end
-	LOG( PLUGIN:GetName().." v"..PLUGIN:GetVersion().." is shutting down..." )
+	LOG(cPluginManager:GetCurrentPlugin():GetName().." is shutting down...")
 end
 
+
+
+
+
 function OnTick()
-	if( SaveMode == eSaveMode_Timed ) then
+	if (SaveMode == eSaveMode_Timed) then
 		SaveTicksCounter = SaveTicksCounter + 1
-		if( SaveTicksCounter == SaveEveryNthTick ) then
+		if (SaveTicksCounter == SaveEveryNthTick) then
 			SaveTicksCounter = 0
 			SaveData()
 		end
 	end
 	RemindTicksCounter = RemindTicksCounter + 1
-	if( RemindTicksCounter == RemindEveryNthTick ) then
+	if (RemindTicksCounter == RemindEveryNthTick) then
 		RemindTicksCounter = 0
 		RemindFrozenPlayers()
 	end
 end
+
+
+
+
