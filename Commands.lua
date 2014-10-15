@@ -69,7 +69,7 @@ function handleMoneyGive(a_Split, a_Player)
 
 	-- Give the money
 	local playername = a_Player:GetName()
-	local IsSuccess, ErrMsg = addMoneyByName(a_Split[3], amount, a_Split[5] or (playername .. " has given you money"))
+	local IsSuccess, ErrMsg = addMoneyByName(a_Split[3], amount, a_Split[5] or (playername .. " has given you money"), "command")
 	if not(IsSuccess) then
 		ErrMsg = ErrMsg or "Cannot give money, unknown failure"
 		if (a_Player ~= nil) then
@@ -123,7 +123,7 @@ function handleMoneyRemove(a_Split, a_Player)
 
 	-- Give the money
 	local playername = a_Player:GetName()
-	local IsSuccess, ErrMsg = removeMoneyByName(a_Split[3], amount, a_Split[5] or (playername .. " has removed your money"))
+	local IsSuccess, ErrMsg = removeMoneyByName(a_Split[3], amount, a_Split[5] or (playername .. " has removed your money"), "command")
 	if not(IsSuccess) then
 		a_Player:SendMessageFailure(ErrMsg or "Cannot remove money, unknown failure")
 		return true
@@ -177,7 +177,7 @@ function handleMoneyTransfer(a_Split, a_Player)
 	end
 
 	-- Transfer the money
-	local IsSuccess, ErrMsg = transferMoneyByName(srcPlayerName, dstPlayerName, amount, msg)
+	local IsSuccess, ErrMsg = transferMoneyByName(srcPlayerName, dstPlayerName, amount, msg, "command")
 	if not(IsSuccess) then
 		a_Player:SendMessageFailure(ErrMsg or "Cannot transfer money, unknown failure");
 		return true
