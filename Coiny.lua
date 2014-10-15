@@ -50,8 +50,8 @@ end
 
 
 function Initialize(a_Plugin)
-	-- Initialize strict mode:
-	-- initializeStrictMode()
+	-- Initialize strict mode - error on reading non-existing globals:
+	initializeStrictMode()
 	
 	-- Initialize commands:
 	dofile(cPluginManager:GetPluginsPath() .. "/InfoReg.lua")
