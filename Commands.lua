@@ -7,7 +7,7 @@
 
 
 
-function HandleMoneyBalance(a_Split, a_Player)
+function handleMoneyBalance(a_Split, a_Player)
 	-- Handler for the "/money balance" in-game command
 	-- Check params:
 	if ((a_Split[2] ~= nil) and (a_Split[2] ~= "balance") and (a_Split[2] ~= "show")) then
@@ -15,40 +15,28 @@ function HandleMoneyBalance(a_Split, a_Player)
 		return true
 	end
 	
-	-- Initialize the player's storage:
-	local playername = a_Player:GetName()
-	InitPlayer(playername)
-
 	-- Report the account balance:
-	local playerMoney = tonumber(PlayersData[playername].money)
+	local balance = getBalanceByName(a_Player:GetName())
 	if (AdvancedMessages) then
-		if (playerMoney < -1) then
-			a_Player:SendMessage(AdvancedMessagesData["NegativePrefix"] .. playerMoney .. AdvancedMessagesData["NegativePostfix"])
-		elseif (playerMoney == -1) then
+		if (balance < -1) then
+			a_Player:SendMessage(AdvancedMessagesData["NegativePrefix"] .. balance .. AdvancedMessagesData["NegativePostfix"])
+		elseif (balance == -1) then
 			a_Player:SendMessage(AdvancedMessagesData["MinusOneCoin"])
-		elseif (playerMoney == 0) then
+		elseif (balance == 0) then
 			a_Player:SendMessage(AdvancedMessagesData["ZeroCoins"])
-		elseif (playerMoney == 1) then
+		elseif (balance == 1) then
 			a_Player:SendMessage(AdvancedMessagesData["OneCoin"])
 		else
-			if (playerMoney < tonumber(AdvancedMessagesData["LowValue"])) then
-				a_Player:SendMessage(AdvancedMessagesData["LowPrefix"] .. playerMoney .. AdvancedMessagesData["LowPostfix"])
-			elseif (playerMoney < tonumber(AdvancedMessagesData["MediumValue"])) then
-				a_Player:SendMessage(AdvancedMessagesData["MediumPrefix"] .. playerMoney .. AdvancedMessagesData["MediumPostfix"])
+			if (balance < tonumber(AdvancedMessagesData["LowValue"])) then
+				a_Player:SendMessage(AdvancedMessagesData["LowPrefix"] .. balance .. AdvancedMessagesData["LowPostfix"])
+			elseif (balance < tonumber(AdvancedMessagesData["MediumValue"])) then
+				a_Player:SendMessage(AdvancedMessagesData["MediumPrefix"] .. balance .. AdvancedMessagesData["MediumPostfix"])
 			else
-				a_Player:SendMessage(AdvancedMessagesData["HighPrefix"] .. playerMoney .. AdvancedMessagesData["HighPostfix"])
+				a_Player:SendMessage(AdvancedMessagesData["HighPrefix"] .. balance .. AdvancedMessagesData["HighPostfix"])
 			end
 		end
 	else
-		if (playerMoney == -1) then
-			a_Player:SendMessage("Your pocket is -1 coin heavy")
-		elseif (playerMoney == 0) then
-			a_Player:SendMessage("You don't have any coins")
-		elseif (playerMoney == 1) then
-			a_Player:SendMessage("Your pocket is 1 coin heavy")
-		else
-			a_Player:SendMessage("Your pocket is " .. playerMoney .. " coins heavy")
-		end
+		a_Player:SendMessageInfo("Your balance is " .. balance);
 	end
 	return true
 end
@@ -57,9 +45,8 @@ end
 
 
 
-function HandleMoneyGive(a_Split, a_Player)
+function handleMoneyGive(a_Split, a_Player)
 	-- Handler for the "/money give <player> <amount> [<message>]" command
-	-- Also handles the "money give <player> <amount> [<message>]" console command
 	-- Check params:
 	if (a_Split[4] == nil) then  -- We need at least 4 parameters
 		a_Player:SendMessage(cCompositeChat("Usage: ", mtFailure)
@@ -80,14 +67,9 @@ function HandleMoneyGive(a_Split, a_Player)
 		return true
 	end
 
-	-- Get the giving player's name, if not from server console:
-	local playername = "console"
-	if (a_Player ~= nil) then
-		playername = a_Player:GetName()
-	end
-
 	-- Give the money
-	local IsSuccess, ErrMsg = GiveMoney(a_Split[3], amount, a_Split[5] or (playername .. " has given you money"))
+	local playername = a_Player:GetName()
+	local IsSuccess, ErrMsg = addMoneyByName(a_Split[3], amount, a_Split[5] or (playername .. " has given you money"))
 	if not(IsSuccess) then
 		ErrMsg = ErrMsg or "Cannot give money, unknown failure"
 		if (a_Player ~= nil) then
@@ -116,9 +98,8 @@ end
 
 
 
-function HandleMoneyRemove(a_Split, a_Player)
-	-- Handler for the "/money remove <player> <amount> [<message>]" command
-	-- Also handles the "money remove <player> <amount> [<message>]" console command
+--- Handler for the "/money remove <player> <amount> [<message>]" command
+function handleMoneyRemove(a_Split, a_Player)
 	-- Check params:
 	if (a_Split[4] == nil) then  -- We need at least 4 parameters
 		a_Player:SendMessage(cCompositeChat("Usage: ", mtFailure)
@@ -139,28 +120,17 @@ function HandleMoneyRemove(a_Split, a_Player)
 		return true
 	end
 
-	-- Get the giving player's name, if not from server console:
-	local playername = "console"
-	if (a_Player ~= nil) then
-		playername = a_Player:GetName()
-	end
 
 	-- Give the money
-	local IsSuccess, ErrMsg = RemoveMoney(a_Split[3], amount, a_Split[5] or (playername .. " has removed your money"))
+	local playername = a_Player:GetName()
+	local IsSuccess, ErrMsg = removeMoneyByName(a_Split[3], amount, a_Split[5] or (playername .. " has removed your money"))
 	if not(IsSuccess) then
-		ErrMsg = ErrMsg or "Cannot remove money, unknown failure"
-		if (a_Player ~= nil) then
-			a_Player:SendMessageFailure(ErrMsg)
-		else
-			LOGWARNING(ErrMsg)
-		end
+		a_Player:SendMessageFailure(ErrMsg or "Cannot remove money, unknown failure")
 		return true
 	end
 	
 	-- Notify each player:
-	if (a_Player ~= nil) then
-		a_Player:SendMessage(FormatMessage("TakenFrom", a_Split[3], amount))
-	end
+	a_Player:SendMessageInfo(FormatMessage("TakenFrom", a_Split[3], amount))
 	cRoot:Get():FindAndDoWithPlayer(a_Split[3],
 		function (a_CBPlayer)
 			if (a_CBPlayer:GetName() == a_Split[3]) then
@@ -174,8 +144,8 @@ end
 
 
 
-function HandleMoneyTransfer(a_Split, a_Player)
-	-- Handler for the "/money transfer <player> <amount> [<message>]" command
+--- Handler for the "/money transfer <player> <amount> [<message>]" command
+function handleMoneyTransfer(a_Split, a_Player)
 	-- Check params:
 	if (a_Split[4] == nil) then  -- We need at least 4 parameters
 		a_Player:SendMessage(cCompositeChat("Usage: ", mtFailure)
@@ -184,6 +154,8 @@ function HandleMoneyTransfer(a_Split, a_Player)
 		)
 		return true
 	end
+	local srcPlayerName = a_Player:GetName();
+	local dstPlayerName = a_Split[3]
 	
 	-- Check the amount:
 	local amount = tonumber(a_Split[4])
@@ -196,10 +168,16 @@ function HandleMoneyTransfer(a_Split, a_Player)
 		return true
 	end
 
+	-- Get the message
+	local msg
+	if (a_Split[5] == nil) then
+		msg = srcPlayerName .. " has transfered money"
+	else
+		msg = table.concat(a_Split, " ", 5)
+	end
+
 	-- Transfer the money
-	local srcPlayerName = a_Player:GetName();
-	local dstPlayerName = a_Split[3]
-	local IsSuccess, ErrMsg = TransferMoney(srcPlayerName, dstPlayerName, amount, a_Split[5] or (srcPlayerName .. " has transferred money to you"))
+	local IsSuccess, ErrMsg = transferMoneyByName(srcPlayerName, dstPlayerName, amount, msg)
 	if not(IsSuccess) then
 		a_Player:SendMessageFailure(ErrMsg or "Cannot transfer money, unknown failure");
 		return true

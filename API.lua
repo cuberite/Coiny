@@ -7,46 +7,67 @@
 
 
 
--- Transfers money from one player account to another, adding the message to the transaction log
--- Returns true on success, false and message on failure
-function TransferMoney(a_SrcPlayerName, a_DstPlayerName, a_Amount, a_Message)
-	-- Make sure both players have their data initialized:
-	InitPlayer(a_SrcPlayerName)
-	InitPlayer(a_DstPlayerName)
+--- Returns the UUID of the specified player
+-- Only uses the local UUID cache; if the player is not in cache, returns nil
+-- Uses offline UUIDs if the server is in offline mode
+local function lookupUuid(a_PlayerName)
+	-- Check params:
+	assert(type(a_PlayerName) == "string")
 	
-	-- If src is frozen, handle as Give instead
-	if (PlayersData[a_SrcPlayerName].freeze) then
-		return GiveMoney(a_DstPlayerName, a_Amount)
+	-- Get the UUID:
+	if (cRoot:Get():GetServer():ShouldAuthenticate()) then
+		local uuid = cMojangAPI:GetUUIDFromPlayerName(a_PlayerName, true)
+		-- Convert from empty string to nil for failures:
+		if (uuid == "") then
+			return nil
+		end
+		return uuid
+	else
+		return cClientHandle:GenerateOfflineUUID(a_PlayerName)
 	end
-	
-	-- If there's not enough money in the src account, return an error:
-	if (PlayersData[a_SrcPlayerName].money < a_Amount) then
-		return false, "Not enough money in the account"
-	end
-	
-	-- Transfer the money:
-	FunctionInternalCall = true  -- Skip the paranoid saving after Give
-	GiveMoney  (a_DstPlayerName, a_Amount, a_Message)
-	RemoveMoney(a_SrcPlayerName, a_Amount, a_Message)
-	ExternalCallSaveCheck()
-	return true
 end
 
 
 
 
 
--- Gives the specified amount of money to the specified player, adding the message to the transaction log
--- Returns true if successful, false and error message if not
-function GiveMoney(a_PlayerName, a_Amount, a_Message)
-	InitPlayer(a_PlayerName)
-	if (PlayersData[a_PlayerName].freeze) then
-		return false, "Player has their account frozen"
+--- Gives the specified amount of money to the specified player, adding the message to the transaction log
+-- Returns true if successful, nil and error message if not
+function addMoneyByName(a_PlayerName, a_Amount, a_Message, a_Src, a_SrcData)
+	-- Check params:
+	assert(type(a_PlayerName) == "string")
+	assert(tonumber(a_Amount) ~= nil)
+	assert(type(a_Message or "") == "string")
+	assert(type(a_Src or "") == "string")
+	assert(type(a_SrcData or "") == "string")
+	
+	-- Look up the UUID:
+	local dstUuid, errMsg = lookupUuid(a_PlayerName)
+	if not(dstUuid) then
+		return nil, errMsg
 	end
-	PlayersData[a_PlayerName].money = PlayersData[a_PlayerName].money + a_Amount
-	-- TODO: Save message into transaction log
-	ExternalCallSaveCheck()
-	return true
+
+	-- Call the storage to do the actual transaction:
+	return g_Storage:addMoney(dstUuid, a_Amount, a_Message, a_Src or "", a_SrcData or "")
+end
+
+
+
+
+
+--- Returns the amount of money in the specified player's account
+-- Returns number on success, nil and reason on failure
+function getBalanceByName(a_PlayerName)
+	-- Check params:
+	assert(type(a_PlayerName) == "string")
+	
+	-- Look up the UUID:
+	local uuid, errMsg = lookupUuid(a_PlayerName)
+	if not(uuid) then
+		return nil, errMsg
+	end
+
+	return g_Storage:getBalance(uuid)
 end
 
 
@@ -54,31 +75,48 @@ end
 
 
 --- Removes the specified amount of money from the specified player, adding the message to the transaction log
--- Returns true if successful, false and error message if not
-function RemoveMoney(a_PlayerName, a_Amount)
-	InitPlayer(a_PlayerName)
-	if (PlayersData[a_PlayerName].freeze) then
-		return false, "Player has their account frozen"
+-- Returns true if successful, nil and error message if not
+function removeMoneyByName(a_PlayerName, a_Amount, a_Message)
+	-- Check params:
+	assert(type(a_PlayerName) == "string")
+	assert(tonumber(a_Amount) ~= nil)
+	assert(type(a_Message or "") == "string")
+	
+	-- Look up the UUID:
+	local uuid, errMsg = lookupUuid(a_PlayerName)
+	if not(uuid) then
+		return nil, errMsg
 	end
-	PlayersData[a_PlayerName].money = PlayersData[a_PlayerName].money - a_Amount
-	if (not(AllowNegativeBalance) and (PlayersData[a_PlayerName].money < 0)) then
-		PlayersData[a_PlayerName].money = 0
-	end
-	ExternalCallSaveCheck()
-	return true
+
+	return g_Storage:removeMoney(uuid, a_Amount, a_Message)
 end
 
 
 
 
---- Returns the amount of money in the specified player's account
--- Returns false and reason on failure
-function GetMoney(a_PlayerName)
-	InitPlayer(a_PlayerName)
-	if not(PlayersData[a_PlayerName]) then
-		return false, "No such player account"
+--- Transfers money from one player account to another, adding the message to the transaction log
+-- Returns true and src final balance on success, nil and message on failure
+-- Note that the transfer fails if the src player doesn't have enough coins.
+function transferMoneyByName(a_SrcPlayerName, a_DstPlayerName, a_Amount, a_Message)
+	-- Check params:
+	assert(type(a_SrcPlayerName) == "string")
+	assert(type(a_DstPlayerName) == "string")
+	assert(tonumber(a_Amount) ~= nil)
+	assert(type(a_Message or "") == "string")
+	
+	-- look up the UUIDs:
+	local srcUuid, dstUuid, errMsg
+	srcUuid, errMsg = lookupUuid(a_SrcPlayerName)
+	if not(srcUuid) then
+		return nil, "Cannot find sender's account: " .. (errMsg or "<unspecified error>")
 	end
-	return PlayersData[a_PlayerName].money
+	dstUuid, errMsg = lookupUuid(a_DstPlayerName)
+	if not(dstUuid) then
+		return nil, "Cannot find receiver's account: " .. (errMsg or "<unspecified error>")
+	end
+
+	-- Do the transfer:
+	return g_Storage:transferMoney(srcUuid, dstUuid, a_Amount, a_Message)
 end
 
 
