@@ -54,7 +54,7 @@ function handleConsoleMoneyGive(a_Split)
 	end
 
 	-- Give the money
-	local isSuccess, errMsg = addMoneyByName(a_Split[3], amount, msg)
+	local isSuccess, errMsg = addMoneyByName(a_Split[3], amount, msg, "console")
 	if not(isSuccess) then
 		return true, errMsg or "Cannot give money, unknown failure"
 	end
@@ -107,7 +107,7 @@ function handleConsoleMoneyRemove(a_Split)
 	end
 
 	-- Remove the money
-	local isSuccess, errMsg = removeMoneyByName(a_Split[3], amount, msg)
+	local isSuccess, errMsg = removeMoneyByName(a_Split[3], amount, msg, "console")
 	if not(isSuccess) then
 		return true, errMsg or "Cannot remove money, unknown failure"
 	end
@@ -160,7 +160,7 @@ function handleConsoleMoneyTransfer(a_Split)
 	end
 
 	-- Give the money
-	local IsSuccess, ErrMsg = transferMoneyByName(a_Split[3], a_Split[4], amount, msg)
+	local IsSuccess, ErrMsg = transferMoneyByName(a_Split[3], a_Split[4], amount, msg, "console")
 	if not(IsSuccess) then
 		return true, ErrMsg or "Cannot transfer money, unknown failure"
 	end
