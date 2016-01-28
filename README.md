@@ -1,5 +1,5 @@
 Coiny
 =====
-Simple economy system plugin for MC-Server project.
+Simple economy system plugin for Cuberite.
 
 Language: Lua
